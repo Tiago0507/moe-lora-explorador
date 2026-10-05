@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explorador interactivo de un estudio controlado sobre cómo organizar adaptadores LoRA en fine-tuning multitarea: compartido, por tarea y mezcla de expertos (MoE-LoRA)."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>MoE-LoRA multitarea | Explorador</title>
+    <script>
+      // Aplica el tema guardado antes de pintar, para evitar un destello.
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch {
+        /* almacenamiento no disponible: se usa el tema del sistema */
+      }
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="brand" href="#inicio" aria-label="Inicio">
+          <span class="brand__mark" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </span>
+          <span class="brand__text">MoE-LoRA <span class="brand__sub">multitarea</span></span>
+        </a>
+        <nav class="sections-nav" aria-label="Secciones">
+          <ol>
+            <li><a href="#inicio" data-key="1">Pregunta</a></li>
+            <li><a href="#configuraciones" data-key="2">Configuraciones</a></li>
+            <li><a href="#resultados" data-key="3">Resultados</a></li>
+            <li><a href="#costo" data-key="4">Costo</a></li>
+            <li><a href="#router" data-key="5">Router</a></li>
+            <li><a href="#conclusiones" data-key="6">Conclusiones</a></li>
+          </ol>
+        </nav>
+        <button class="icon-button" id="theme-toggle" type="button" aria-label="Cambiar tema">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path
+              d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+    </header>
+
+    <main id="contenido">
+      <!-- 1. Pregunta -->
+      <section id="inicio" class="section hero" aria-labelledby="hero-title">
+        <div class="wrap">
+          <p class="eyebrow">Inteligencia Artificial · Universidad Icesi · 2026</p>
+          <h1 id="hero-title" class="hero__title">¿Compartir o aislar parámetros entre tareas?</h1>
+          <p class="hero__lead">
+            Ajustamos un mismo modelo congelado a cinco tareas de reseñas con tres organizaciones de
+            adaptadores LoRA. Solo cambia cómo se reparten los parámetros entre tareas. Todo lo
+            demás es idéntico.
+          </p>
+          <div class="hero__dilemma" role="list">
+            <div class="dilemma-card" role="listitem">
+              <span class="dilemma-card__tag">Compartir</span>
+              <p>Pocos parámetros, pero las tareas compiten por el mismo espacio.</p>
+            </div>
+            <div class="dilemma-card dilemma-card--mid" role="listitem">
+              <span class="dilemma-card__tag">Mezcla de expertos</span>
+              <p>Varios expertos y un enrutador que decide cuáles usa cada tarea.</p>
+            </div>
+            <div class="dilemma-card" role="listitem">
+              <span class="dilemma-card__tag">Aislar</span>
+              <p>Sin competencia, pero el costo crece con cada tarea nueva.</p>
+            </div>
+          </div>
+          <dl class="stat-row" id="hero-stats"></dl>
+          <p class="hero__authors">Juan Manuel Díaz Moreno · Santiago Valencia García</p>
+        </div>
+      </section>
+
+      <!-- 2. Configuraciones -->
+      <section id="configuraciones" class="section section--alt" aria-labelledby="configs-title">
+        <div class="wrap">
+          <p class="eyebrow">1 · El experimento</p>
+          <h2 id="configs-title">Tres formas de organizar los adaptadores</h2>
+          <p class="section__lead">
+            DistilBERT congelado, adaptadores LoRA de rango 2 en las 12 proyecciones de consulta y
+            valor, y una cabeza lineal por tarea. Elige una tarea para ver qué parámetros la
+            atienden en cada configuración.
+          </p>
+          <div class="task-picker" role="radiogroup" aria-label="Tarea" id="task-picker"></div>
+          <p class="task-detail" id="task-detail" aria-live="polite"></p>
+          <div class="config-grid" id="config-grid"></div>
+          <aside class="callout">
+            <h3 class="callout__title">Tres diferencias con MOELoRA original</h3>
+            <ul>
+              <li>
+                Cada experto tiene rango completo r = 2. MOELoRA divide el rango (r/N) para que el
+                total iguale al de un solo LoRA.
+              </li>
+              <li>
+                Se mezclan primero las matrices y luego se multiplican: (Σ ω A)(Σ ω B), no Σ ω BA.
+              </li>
+              <li>El enrutador usa un embedding por tarea con temperatura 0.5 y top-2.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 3. Resultados -->
+      <section id="resultados" class="section" aria-labelledby="results-title">
+        <div class="wrap">
+          <p class="eyebrow">2 · Desempeño</p>
+          <h2 id="results-title">Antes de mirar: ¿cuál gana?</h2>
+          <p class="section__lead">
+            Las tres configuraciones se entrenaron con los mismos datos, semilla e hiperparámetros.
+            Vota por la que crees que obtiene la mejor macro-F1 promedio.
+          </p>
+          <div class="vote" id="vote" role="group" aria-label="Apuesta"></div>
+          <div class="reveal" id="reveal" hidden>
+            <p class="reveal__verdict" id="verdict" aria-live="polite"></p>
+            <div class="avg-row" id="avg-row"></div>
+
+            <div class="panel">
+              <div class="panel__head">
+                <h3>Resultado por tarea</h3>
+                <div class="segmented" role="radiogroup" aria-label="Métrica" id="metric-toggle">
+                  <button type="button" role="radio" aria-checked="true" data-metric="macroF1">
+                    Macro-F1
+                  </button>
+                  <button type="button" role="radio" aria-checked="false" data-metric="accuracy">
+                    Exactitud
+                  </button>
+                </div>
+              </div>
+              <div class="legend" id="results-legend"></div>
+              <div class="chart" id="bars-chart"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__head">
+                <h3>¿Mejora o ruido?</h3>
+              </div>
+              <p class="panel__note">
+                Diferencia frente al LoRA compartido, en puntos porcentuales. La banda gris es la
+                semiamplitud aproximada del intervalo binomial al 95&nbsp;% con 400 ejemplos de
+                prueba. Es una aproximación analítica: el experimento tiene una sola semilla.
+              </p>
+              <div class="legend" id="diff-legend"></div>
+              <div class="chart" id="diff-chart"></div>
+              <div class="insights" id="results-insights"></div>
+            </div>
+            <details class="table-view">
+              <summary>Ver los resultados como tabla</summary>
+              <div id="results-table"></div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Costo -->
+      <section id="costo" class="section section--alt" aria-labelledby="cost-title">
+        <div class="wrap">
+          <p class="eyebrow">3 · Costo de ajuste</p>
+          <h2 id="cost-title">¿Se conserva el ahorro al crecer el número de tareas?</h2>
+          <p class="section__lead">
+            Parámetros entrenables de adaptador y enrutador según el número de tareas T. Mueve los
+            controles para ver cuándo MoE-LoRA empieza a salir más barato que un LoRA por tarea.
+          </p>
+          <div class="sim">
+            <form class="controls" id="cost-controls" aria-label="Parámetros del simulador">
+              <div class="control">
+                <label for="ctl-tasks">Tareas <span class="var">T</span></label>
+                <output id="out-tasks" for="ctl-tasks"></output>
+                <input id="ctl-tasks" type="range" min="1" max="20" step="1" value="5" />
+              </div>
+              <div class="control">
+                <label for="ctl-experts">Expertos <span class="var">E</span></label>
+                <output id="out-experts" for="ctl-experts"></output>
+                <input id="ctl-experts" type="range" min="1" max="8" step="1" value="4" />
+              </div>
+              <div class="control">
+                <label for="ctl-rank">Rango LoRA <span class="var">r</span></label>
+                <output id="out-rank" for="ctl-rank"></output>
+                <input id="ctl-rank" type="range" min="0" max="4" step="1" value="1" />
+              </div>
+              <label class="switch">
+                <input id="ctl-split" type="checkbox" />
+                <span class="switch__track" aria-hidden="true"></span>
+                <span>Dividir el rango entre expertos (r/E), como MOELoRA</span>
+              </label>
+              <p class="control__warning" id="split-warning" hidden></p>
+              <button class="button button--ghost" type="button" id="cost-reset">
+                Valores del experimento
+              </button>
+            </form>
+            <div class="sim__output">
+              <div class="cost-tiles" id="cost-tiles" aria-live="polite"></div>
+              <div class="legend" id="cost-legend"></div>
+              <div class="chart" id="cost-chart"></div>
+              <p class="formula" id="cost-formula"></p>
+            </div>
+          </div>
+          <details class="table-view">
+            <summary>Ver la extrapolación como tabla</summary>
+            <div id="cost-table"></div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 5. Router -->
+      <section id="router" class="section" aria-labelledby="router-title">
+        <div class="wrap">
+          <p class="eyebrow">4 · Enrutador</p>
+          <h2 id="router-title">¿Qué experto atiende a cada tarea?</h2>
+          <p class="section__lead">
+            El notebook muestra los pesos crudos del enrutador, sin la temperatura ni el top-k que
+            el modelo aplica al entrenar. Cambia a los pesos efectivos para ver lo que realmente usa
+            cada tarea.
+          </p>
+          <div class="router-controls">
+            <div class="segmented" role="radiogroup" aria-label="Pesos" id="router-mode">
+              <button type="button" role="radio" aria-checked="false" data-mode="raw">
+                Crudos (notebook)
+              </button>
+              <button type="button" role="radio" aria-checked="true" data-mode="effective">
+                Efectivos
+              </button>
+            </div>
+            <div class="control control--inline">
+              <label for="ctl-tau">Temperatura <span class="var">τ</span></label>
+              <input id="ctl-tau" type="range" min="0.1" max="2" step="0.1" value="0.5" />
+              <output id="out-tau" for="ctl-tau"></output>
+            </div>
+            <div class="control control--inline">
+              <label for="ctl-topk">Top-<span class="var">k</span></label>
+              <input id="ctl-topk" type="range" min="1" max="4" step="1" value="2" />
+              <output id="out-topk" for="ctl-topk"></output>
+            </div>
+            <button class="button button--ghost" type="button" id="router-reset">
+              Valores del modelo (τ = 0.5, k = 2)
+            </button>
+          </div>
+          <div class="router-layout">
+            <div class="panel">
+              <div class="panel__head"><h3>Pesos tarea × experto</h3></div>
+              <div class="chart" id="heatmap"></div>
+            </div>
+            <div class="panel">
+              <div class="panel__head"><h3>Especialización por tarea</h3></div>
+              <p class="panel__note">
+                Entropía normalizada: 0 = un solo experto, 1 = mezcla uniforme.
+              </p>
+              <div class="chart" id="entropy-chart"></div>
+            </div>
+          </div>
+          <div class="insights" id="router-insights"></div>
+          <p class="footnote">
+            Los pesos efectivos se reconstruyen desde los valores del mapa del notebook, redondeados
+            a dos decimales: son aproximados. Dentro del top-k, ω<sub>i</sub> ∝ p<sub>i</sub
+            ><sup>1/τ</sup>.
+          </p>
+        </div>
+      </section>
+
+      <!-- 6. Conclusiones -->
+      <section id="conclusiones" class="section section--alt" aria-labelledby="conclusions-title">
+        <div class="wrap">
+          <p class="eyebrow">5 · Conclusiones</p>
+          <h2 id="conclusions-title">Lo que se puede afirmar y lo que no</h2>
+          <div class="answers">
+            <article class="answer">
+              <p class="answer__label">Problema abierto 1 · Variedad de tareas</p>
+              <h3>El enrutador agrupó tareas por su naturaleza</h3>
+              <p>
+                Las tres tareas de polaridad comparten el experto 2, mientras que tópico y longitud
+                usan otros. Separar parámetros ayudó en <code>rating5</code> (+3.6 a +3.9 pp) y
+                <code>length</code> (+1.5 a +1.8 pp): consistente con interferencia leve, no
+                concluyente con una semilla.
+              </p>
+            </article>
+            <article class="answer">
+              <p class="answer__label">Problema abierto 2 · Costo de ajuste</p>
+              <h3>Constante en T, pero no gratis</h3>
+              <p>
+                MoE-LoRA usa un 20&nbsp;% menos que LoRA por tarea con T = 5 y su costo no crece con
+                las tareas. Aun así cuesta 4 veces el adaptador compartido, porque cada experto
+                tiene rango completo.
+              </p>
+            </article>
+          </div>
+          <div class="claims">
+            <div class="claims__col">
+              <h3 class="claims__title claims__title--yes">Se puede afirmar</h3>
+              <ul>
+                <li>Separar parámetros mejoró la macro-F1 promedio en cerca de 1 pp.</li>
+                <li>La ganancia se concentra en <code>rating5</code> y <code>length</code>.</li>
+                <li>El costo de MoE-LoRA es independiente de T.</li>
+              </ul>
+            </div>
+            <div class="claims__col">
+              <h3 class="claims__title claims__title--no">No se puede afirmar</h3>
+              <ul>
+                <li>Que MoE-LoRA supere a LoRA por tarea: 0.1 pp es ruido.</li>
+                <li>Que cada tarea tenga un experto propio.</li>
+                <li>Que el resultado se mantenga con más semillas o modelos mayores.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="future">
+            <h3>Siguiente paso</h3>
+            <p>
+              Repetir con varias semillas, expertos de rango r/N como en MOELoRA, enrutador por
+              token, tareas generativas y modelos mayores.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap footer__inner">
+        <p>
+          <strong>Organización de adaptadores LoRA en fine-tuning multitarea</strong><br />
+          Juan Manuel Díaz Moreno y Santiago Valencia García · Inteligencia Artificial · Universidad
+          Icesi, Cali, Colombia
+        </p>
+        <p class="footer__meta">
+          Todas las cifras provienen de las salidas del notebook del experimento. Teclas
+          <kbd>1</kbd> a <kbd>6</kbd> para navegar por secciones.
+        </p>
+      </div>
+    </footer>
+    <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+  </body>
+</html>

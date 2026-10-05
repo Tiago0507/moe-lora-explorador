@@ -1,0 +1,119 @@
+/*
+ * Tokens de diseño. Las series usan los tres primeros puestos de una paleta
+ * categórica validada para daltonismo (azul, naranja, aguamarina), los mismos
+ * tonos de las figuras del paper. El modo oscuro tiene sus propios pasos.
+ */
+:root {
+  color-scheme: light;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --bg: #f6f5f1;
+  --surface: #fcfcfb;
+  --surface-2: #efeee9;
+  --surface-3: #e6e4de;
+  --border: #dfddd6;
+  --grid: #e7e5df;
+  --text-primary: #16181d;
+  --text-secondary: #4d4c48;
+  --text-muted: #6b6a65;
+  --accent: #4a3aa7;
+  --accent-soft: #ecebf8;
+  --accent-ink: #ffffff;
+  --band: rgba(22, 24, 29, 0.07);
+  --focus: #4a3aa7;
+
+  --series-shared: #2a78d6;
+  --series-pertask: #eb6834;
+  --series-moe: #1baf7a;
+  /* Texto sobre un relleno de serie: el que más contraste da con cada tono. */
+  --on-series-shared: #ffffff;
+  --on-series-pertask: #16181d;
+  --on-series-moe: #16181d;
+
+  --good: #0f7a3e;
+  --bad: #b3261e;
+
+  --heat-0: #f2f7fe;
+  --heat-1: #0d366b;
+
+  --radius-s: 6px;
+  --radius-m: 12px;
+  --radius-l: 20px;
+  --shadow: 0 1px 2px rgba(22, 24, 29, 0.06), 0 8px 24px rgba(22, 24, 29, 0.06);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 112px;
+
+  --wrap: 1120px;
+  --topbar-h: 64px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #141413;
+    --surface: #1a1a19;
+    --surface-2: #222220;
+    --surface-3: #2c2c29;
+    --border: #353531;
+    --grid: #2e2e2a;
+    --text-primary: #f3f2ee;
+    --text-secondary: #c3c2b7;
+    --text-muted: #9a998f;
+    --accent: #9085e9;
+    --accent-soft: #2a2740;
+    --accent-ink: #141413;
+    --band: rgba(243, 242, 238, 0.08);
+    --focus: #9085e9;
+    --series-shared: #3987e5;
+    --series-pertask: #d95926;
+    --series-moe: #199e70;
+    --on-series-shared: #141413;
+    --on-series-pertask: #141413;
+    --on-series-moe: #141413;
+    --good: #5cc98a;
+    --bad: #f2867f;
+    --heat-0: #1f2530;
+    --heat-1: #6da7ec;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #141413;
+  --surface: #1a1a19;
+  --surface-2: #222220;
+  --surface-3: #2c2c29;
+  --border: #353531;
+  --grid: #2e2e2a;
+  --text-primary: #f3f2ee;
+  --text-secondary: #c3c2b7;
+  --text-muted: #9a998f;
+  --accent: #9085e9;
+  --accent-soft: #2a2740;
+  --accent-ink: #141413;
+  --band: rgba(243, 242, 238, 0.08);
+  --focus: #9085e9;
+  --series-shared: #3987e5;
+  --series-pertask: #d95926;
+  --series-moe: #199e70;
+  --on-series-shared: #141413;
+  --on-series-pertask: #141413;
+  --on-series-moe: #141413;
+  --good: #5cc98a;
+  --bad: #f2867f;
+  --heat-0: #1f2530;
+  --heat-1: #6da7ec;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
